@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solar System</title>
+  <style>
+    body { margin:0; font-family: 'Orbitron', sans-serif; background:black; color:white; overflow-x:hidden;}
+    body::before {
+      content:"";
+      position:fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      background:url('https://www.nasa.gov/wp-content/uploads/2025/09/iss073e0516005orig.jpg') no-repeat center center;
+      background-size:cover;
+      filter: brightness(1.2) contrast(1.1) saturate(1.3);
+      opacity:0.5;
+      z-index:-1;
+    }
+
+    nav { width:100%; background:#111; padding:15px 0; position:sticky; top:0; z-index:10; }
+    nav ul { list-style:none; display:flex; justify-content:center; gap:40px; padding:0; }
+    nav ul li a { color:white; text-decoration:none; font-size:18px; font-weight:bold; cursor:pointer; }
+    nav ul li a:hover { color:#00aaff; }
+
+    .title { text-align:center; font-size:70px; margin-top:20px; font-weight:bold; color:#fff; text-shadow:0 0 15px #00ccff,0 0 25px #ff00ff; position:relative;}
+    .title::before, .title::after { content:"✦"; font-size:40px; color:#fff; animation:sparkle 1.5s infinite alternate; position:absolute; top:50%; transform:translateY(-50%);}
+    .title::before { left:22%; } .title::after { right:22%; }
+    @keyframes sparkle { from {opacity:0.3; text-shadow:0 0 5px white;} to {opacity:1; text-shadow:0 0 20px white;} }
+
+    .solar-container { position:relative; width:800px; height:800px; margin:40px auto; }
+    .sun { width:120px; height:120px; background:radial-gradient(circle,#ffdd33,#ff8800); border-radius:50%; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); box-shadow:0 0 40px #ff8800; z-index:10; }
+    .orbit { position:absolute; top:50%; left:50%; border:1px dashed rgba(255,255,255,0.3); border-radius:50%; transform:translate(-50%,-50%); animation:rotate linear infinite; }
+    @keyframes rotate { from { transform:translate(-50%,-50%) rotate(0deg);} to { transform:translate(-50%,-50%) rotate(360deg);} }
+    .planet { position:absolute; top:0; left:50%; transform:translate(-50%,-50%); border-radius:50%; }
+
+    .orbit1 { width:160px; height:160px; animation-duration:8s; }
+    .orbit2 { width:220px; height:220px; animation-duration:12s; }
+    .orbit3 { width:300px; height:300px; animation-duration:18s; }
+    .orbit4 { width:380px; height:380px; animation-duration:25s; }
+    .orbit5 { width:460px; height:460px; animation-duration:32s; }
+    .orbit6 { width:540px; height:540px; animation-duration:40s; }
+    .orbit7 { width:620px; height:620px; animation-duration:48s; }
+    .orbit8 { width:700px; height:700px; animation-duration:55s; }
+
+    .mercury{width:10px;height:10px;background:#b1b1b1;}
+    .venus{width:18px;height:18px;background:#c9a36a;}
+    .earth{width:20px;height:20px;background:linear-gradient(#2e7cff,#1a4bb8);}
+    .mars{width:14px;height:14px;background:#b4432a;}
+    .jupiter{width:50px;height:50px;background:radial-gradient(circle,#d9b48a,#b98b58); box-shadow:0 0 10px rgba(255,200,150,0.4);}
+    .saturn{width:40px;height:40px;background:#d3b780; position:relative;}
+    .saturn::before{ content:""; position:absolute; top:50%; left:50%; width:90px;height:30px; transform:translate(-50%,-50%) rotate(25deg); border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,0.4),rgba(200,170,120,0.1)); border:3px solid rgba(240,220,180,0.8); border-left-color:rgba(240,220,180,0.3); border-right-color:rgba(240,220,180,0.3); box-shadow:0 0 15px rgba(255,230,190,0.4);}
+    .uranus{width:22px;height:22px;background:#9bdcf4;}
+    .neptune{width:20px;height:20px;background:#3b5bff;}
+
+    .info{width:80%; margin:40px auto; text-align:center; font-size:18px; line-height:1.6;}
+    .planet-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px; width:90%; margin:40px auto;}
+    .planet-box{background:#1a1a1a; padding:20px; border-radius:15px; text-align:center; cursor:pointer; transition: transform 0.3s, background 0.3s;}
+    .planet-box:hover{background:#333; transform:scale(1.1);}
+    .planet-box img{width:120px;height:120px;border-radius:50%; animation: rotatePlanet 8s linear infinite;}
+
+    #planetDetails, #moonDetails{
+      display:none; 
+      position:fixed; 
+      top:0; left:0; 
+      width:100%; height:100%; 
+      background:rgba(0,0,0,0.8); 
+      justify-content:center; 
+      align-items:center;
+      animation: popIn 0.3s ease forwards;
+    }
+    @keyframes popIn { from {opacity:0; transform: scale(0.8);} to {opacity:1; transform: scale(1);} }
+
+    .details-box{width:60%; background:#222; padding:30px; border-radius:15px; text-align:left; }
+    .details-box h2{text-align:center;}
+    .close-btn{background:red; padding:10px 20px; border:none; color:white; float:right; cursor:pointer; margin-bottom:20px;}
+    .details-box img { display:block; margin:0 auto 20px auto; width:200px; height:200px; border-radius:50%; animation: rotatePlanet 8s linear infinite; }
+
+    .moon-planet-header { text-align:center; font-size:28px; margin-top:60px; text-decoration:underline; }
+
+    @keyframes rotatePlanet { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  </style>
+</head>
+<body>
+
+  <nav>
+    <ul>
+      <li><a data-target="home">Home</a></li>
+      <li><a data-target="planetSection">Planet Details</a></li>
+      <li><a data-target="moonSection">Moon Details</a></li>
+      <li><a data-target="about">About Us</a></li>
+      <li><a data-target="contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <h1 class="title">THE SOLAR SYSTEM</h1>
+
+  <div class="solar-container">
+    <div class="sun"></div>
+    <div class="orbit orbit1"><div class="planet mercury"></div></div>
+    <div class="orbit orbit2"><div class="planet venus"></div></div>
+    <div class="orbit orbit3"><div class="planet earth"></div></div>
+    <div class="orbit orbit4"><div class="planet mars"></div></div>
+    <div class="orbit orbit5"><div class="planet jupiter"></div></div>
+    <div class="orbit orbit6"><div class="planet saturn"></div></div>
+    <div class="orbit orbit7"><div class="planet uranus"></div></div>
+    <div class="orbit orbit8"><div class="planet neptune"></div></div>
+  </div>
+
+  <!-- Home Section -->
+  <div class="info" id="home">
+    <p>The solar system is a vast and intricate cosmic neighborhood that consists of the Sun, eight major planets, their moons, dwarf planets, comets, asteroids, meteoroids, and the vast expanse of interplanetary space filled with gas and dust. At the heart of the solar system lies the Sun, a massive, glowing sphere of hot plasma that provides the energy necessary for life on Earth and drives the orbits and movements of all the surrounding celestial bodies. The planets are divided into two groups: the inner terrestrial planets—Mercury, Venus, Earth, and Mars—composed mainly of rock and metal, with solid surfaces; and the outer gas giants—Jupiter and Saturn—along with the ice giants Uranus and Neptune, which are much larger, composed mostly of gases and ices, and have complex systems of rings and many moons. Surrounding the planets are countless smaller objects like asteroids, primarily found in the asteroid belt between Mars and Jupiter, and comets, icy bodies that develop bright tails when they approach the Sun. Beyond Neptune lies the Kuiper Belt and the distant Oort Cloud, which are reservoirs of icy bodies and remnants from the early formation of the solar system. The solar system formed around 4.6 billion years ago from a giant molecular cloud of gas and dust, with gravity pulling matter together to form the Sun and the surrounding planets. This cosmic arrangement is held together by the Sun’s gravitational pull, which keeps the planets, moons, and smaller bodies in stable orbits. The study of the solar system not only helps us understand the nature of our own planet but also provides insights into the formation of other planetary systems, the potential for life beyond Earth, and the dynamic interactions of celestial bodies across space. In essence, the solar system is a dynamic, interconnected system of celestial objects that continues to evolve and awe humanity with its complexity, scale, and beauty.</p>
+  </div>
+
+  <!-- About Section -->
+  <div class="info" id="about"><h2>About Us</h2>
+    <p>
+      Welcome to Solar Explorer — a place where curiosity becomes knowledge and imagination blends with science.
+      Our mission is to bring the wonders of the universe closer to everyone. From the blazing surface of the Sun
+      to the icy worlds beyond Neptune, we believe the cosmos should be explored, understood, and loved by all.
+      <br><br>
+      We are a passionate team of dreamers, learners, and creators who want to inspire the next generation
+      of astronomers, scientists, students, and space lovers. Every animation, every detail, and every line of
+      information on this page has been designed to help you feel the beauty of our solar system — as if you’re
+      floating in space, witnessing the planets dance around their star.
+      <br><br>
+      Whether you're learning for school, exploring out of curiosity, or dreaming of one day touching the stars,
+      this website is your gateway to the universe. Enjoy your cosmic journey!
+    </p>
+  </div>
+
+  <!-- Contact -->
+  <div class="info" id="contact">
+    <h2>Contact Us</h2>
+    <p><strong>Address:</strong> 123 Galaxy Road</p>
+    <p><strong>Phone:</strong> +91 98765 43210</p>
+    <p><strong>Email:</strong> contact@solarexplorer.com</p>
+  </div>
+
+  <!-- Planet Section -->
+  <h2 style="text-align:center; margin-top:120px;" id="planetSection">Planet Details</h2>
+  <div class="planet-grid" id="planetGridContainer">
+    <div class="planet-box" onclick="showDetails('Mercury')">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Mercury_in_true_color.jpg" alt="Mercury"/>
+      <h3>Mercury</h3>
+    </div>
+    <div class="planet-box" onclick="showDetails('Venus')">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/Venus-real_color.jpg" alt="Venus"/>
+      <h3>Venus</h3>
+    </div>
+    <div class="planet-box" onclick="showDetails('Earth')">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg" alt="Earth"/>
+      <h3>Earth</h3>
+    </div>
+    <div class="planet-box" onclick="showDetails('Mars')">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg" alt="Mars"/>
+      <h3>Mars</h3>
+    </div>
+    <div class="planet-box" onclick="showDetails('Jupiter')">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg" alt="Jupiter"/>
+      <h3>Jupiter</h3>
+    </div>
+    <div class="planet-box" onclick="showDetails('Saturn')">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/c/c7/Saturn_during_Equinox.jpg" alt="Saturn"/>
+      <h3>Saturn</h3>
+    </div>
+    <div class="planet-box" onclick="showDetails('Uranus')">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/3/3d/Uranus2.jpg" alt="Uranus"/>
+      <h3>Uranus</h3>
+    </div>
+    <div class="planet-box" onclick="showDetails('Neptune')">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Neptune_Full.jpg" alt="Neptune"/>
+      <h3>Neptune</h3>
+    </div>
+  </div>
+
+  <div id="planetDetails">
+    <div class="details-box">
+      <button class="close-btn" onclick="closeDetails()">Close</button>
+      <h2 id="planetTitle"></h2>
+      <img id="planetImg" src="" alt="Planet Image"/>
+      <ul id="planetInfo"></ul>
+    </div>
+  </div>
+
+  <!-- Moon Section -->
+  <h2 style="text-align:center; margin-top:120px;" id="moonSection">Moon Details</h2>
+  <div id="moonGridContainer"></div>
+
+  <div id="moonDetails">
+    <div class="details-box">
+      <button class="close-btn" onclick="closeMoonDetails()">Close</button>
+      <h2 id="moonTitle"></h2>
+      <img id="moonImg" src="" alt="Moon Image"/>
+      <ul id="moonInfo"></ul>
+    </div>
+  </div>
+
+  <script>
+
+    /* ------------ UPDATED PLANET DATA (10 bullet points each) ------------ */
+
+    const data = {
+      Mercury: { img:"https://upload.wikimedia.org/wikipedia/commons/4/4a/Mercury_in_true_color.jpg",
+        bullets:[
+          "Closest planet to the Sun",
+          "Smallest planet in the solar system",
+          "No atmosphere to trap heat",
+          "Temperature swings from -173°C to 427°C",
+          "Has no moons",
+          "Orbits the Sun in just 88 days",
+          "Surface full of craters",
+          "No seasons",
+          "Weak magnetic field",
+          "Day is longer than its year"
+        ]
+      },
+
+      Venus: { img:"https://upload.wikimedia.org/wikipedia/commons/e/e5/Venus-real_color.jpg",
+        bullets:[
+          "Second planet from the Sun",
+          "Hottest planet due to runaway greenhouse effect",
+          "Thick carbon dioxide atmosphere",
+          "Surface pressure 92 times Earth",
+          "No moons",
+          "Rotates backwards",
+          "Volcanic surface",
+          "Covered thick yellow clouds",
+          "Often called Earth's twin",
+          "Brightest object in night sky after Moon"
+        ]
+      },
+
+      Earth: { img:"https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg",
+        bullets:[
+          "Only known planet with life",
+          "70% surface is water",
+          "One natural moon",
+          "Has an oxygen-rich atmosphere",
+          "Has plate tectonics",
+          "Perfect distance from Sun",
+          "Strong magnetic field",
+          "Has seasons due to tilt",
+          "Rich biodiversity",
+          "Supports human civilization"
+        ]
+      },
+
+      Mars: { img:"https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg",
+        bullets:[
+          "Known as the Red Planet",
+          "Two moons: Phobos & Deimos",
+          "Home to Olympus Mons (largest volcano)",
+          "Thin carbon dioxide atmosphere",
+          "Dust storms cover the planet",
+          "Evidence of past water",
+          "Very cold climate",
+          "Potential human exploration target",
+          "Rusty iron-rich soil",
+          "Has seasons like Earth"
+        ]
+      },
+
+      Jupiter: { img:"https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg",
+        bullets:[
+          "Largest planet in solar system",
+          "Gas giant composed of hydrogen & helium",
+          "Has 79 known moons",
+          "Home to the Great Red Spot",
+          "Strongest magnetic field",
+          "Fastest rotation of all planets",
+          "Has faint rings",
+          "Immense atmospheric storms",
+          "Produces strong auroras",
+          "Could fit 1,300 Earths inside"
+        ]
+      },
+
+      Saturn: { img:"https://upload.wikimedia.org/wikipedia/commons/c/c7/Saturn_during_Equinox.jpg",
+        bullets:[
+          "Known for its beautiful rings",
+          "Gas giant",
+          "82 confirmed moons",
+          "Low density (could float in water)",
+          "Made mostly of hydrogen",
+          "Fast rotation",
+          "Rings made of ice and rock",
+          "Yellow-brown clouds",
+          "Very strong winds",
+          "Second largest planet"
+        ]
+      },
+
+      Uranus: { img:"https://upload.wikimedia.org/wikipedia/commons/3/3d/Uranus2.jpg",
+        bullets:[
+          "Ice giant",
+          "Tilts on its side (98°)", 
+          "27 known moons",
+          "Blue-green color due to methane",
+          "Coldest planet",
+          "Faint rings",
+          "Very long seasons",
+          "High-speed winds",
+          "Discovered in 1781",
+          "Has a rocky core"
+        ]
+      },
+
+      Neptune: { img:"https://upload.wikimedia.org/wikipedia/commons/5/56/Neptune_Full.jpg",
+        bullets:[
+          "Farthest planet from Sun",
+          "Ice giant",
+          "14 moons",
+          "Strongest winds in solar system",
+          "Blue color from methane",
+          "Has faint rings",
+          "Cold surface temperatures",
+          "Year lasts 165 Earth years",
+          "Storms similar to Jupiter",
+          "Discovered in 1846"
+        ]
+      }
+    };
+
+    /* ------------ UPDATED MOON DATA (10 bullet points each) ------------ */
+
+    const moons = {
+      "Earth":[
+        {name:"Moon",
+          img:"https://upload.wikimedia.org/wikipedia/commons/e/e1/FullMoon2010.jpg",
+          bullets:[
+            "First human landing in 1969",
+            "Controls Earth's tides",
+            "Formed from a giant impact",
+            "Only natural satellite of Earth",
+            "Has no atmosphere",
+            "Covered in craters",
+            "Reflects sunlight (not glowing itself)",
+            "Takes 27 days to orbit Earth",
+            "Always shows same side to Earth",
+            "Largest moon relative to its planet"
+          ]
+        }
+      ],
+
+      "Mars":[
+        {name:"Phobos",
+          img:"https://science.nasa.gov/wp-content/uploads/2017/11/phobos-pia10368-1920x1200-1.jpg?resize=300,188",
+          bullets:[
+            "Larger of Mars’ two moons",
+            "Orbits very close to Mars",
+            "Will crash into Mars someday",
+            "Heavily cratered surface",
+            "Irregular potato shape",
+            "Very low gravity",
+            "Rises in the west",
+            "Orbits in just 7.6 hours",
+            "Captured asteroid",
+            "Covered in grooves and scratches"
+          ]
+        },
+        {name:"Deimos",
+          img:"https://science.nasa.gov/wp-content/uploads/2017/11/deimos-1920x1200-1.jpg?resize=300,188",
+          bullets:[
+            "Smaller of Mars’ two moons",
+            "Very smooth surface",
+            "Orbits far from Mars",
+            "Moves very slowly in sky",
+            "Low reflectivity",
+            "Likely captured asteroid",
+            "Takes 30 hours to orbit",
+            "Few craters",
+            "Very low gravity",
+            "Appears like a star from Mars"
+          ]
+        }
+      ],
+
+      "Jupiter":[
+        {name:"Ganymede",
+          img:"https://science.nasa.gov/wp-content/uploads/2023/09/Galileo_Ganymede-800x600-1.jpg",
+          bullets:[
+            "Largest moon in solar system",
+            "Bigger than Mercury",
+            "Has its own magnetic field",
+            "Icy surface",
+            "Possible underground ocean",
+            "Heavily cratered",
+            "Dark and bright regions",
+            "Orbits Jupiter in 7 days",
+            "Thin atmosphere",
+            "Discovered by Galileo"
+          ]
+        },
+        {name:"Callisto",
+          img:"https://images-assets.nasa.gov/image/PIA03456/PIA03456~orig.jpg?w=295&h=300&fit=crop&crop=faces%2Cfocalpoint",
+          bullets:[
+            "Second largest moon of Jupiter",
+            "Most cratered body in solar system",
+            "Icy surface",
+            "Thin CO2 atmosphere",
+            "Possible underground ocean",
+            "Low radiation levels",
+            "Very old surface",
+            "Dark appearance",
+            "Large impact basins",
+            "Orbits in 16.7 days"
+          ]
+        },
+        {name:"Io",
+          img:"https://science.nasa.gov/wp-content/uploads/2024/05/io-from-juno-close-flyby-p57-%E2%80%9315850.jpg?resize=1536,1536",
+          bullets:[
+            "Most volcanic world",
+            "Hundreds of active volcanoes",
+            "Bright colorful surface",
+            "Sulfur-rich landscape",
+            "No water",
+            "Thin atmosphere",
+            "Tidal heating from Jupiter",
+            "Orbits in 1.7 days",
+            "Constant surface changes",
+            "Molten lava lakes"
+          ]
+        },
+        {name:"Europa",
+          img:"https://science.nasa.gov/wp-content/uploads/2024/07/pia25695-nasas-juno-mission-captures-images-of-europa.jpg?resize=600,529",
+          bullets:[
+            "Icy crust",
+            "Possible liquid ocean beneath",
+            "Strong candidate for life",
+            "Few craters",
+            "Surface cracking patterns",
+            "Very smooth surface",
+            "Thin oxygen atmosphere",
+            "Orbits in 3.5 days",
+            "Discovered by Galileo",
+            "Reflective icy surface"
+          ]
+        }
+      ],
+
+      "Saturn":[
+        {name:"Titan",
+          img:"https://science.nasa.gov/wp-content/uploads/2023/06/pia11548-titan-16x9-1.jpg?resize=1536,864",
+          bullets:[
+            "Second largest moon",
+            "Thick orange atmosphere",
+            "Lakes of methane",
+            "Rivers and seas exist",
+            "Complex chemistry",
+            "Surface cold as -180°C",
+            "Mountains and dunes",
+            "Low gravity",
+            "Possible subsurface ocean",
+            "Similar size to Mercury"
+          ]
+        },
+        {name:"Enceladus",
+          img:"https://assets.science.nasa.gov/dynamicimage/assets/science/psd/solar/2023/07/PIA11133.jpg?w=415&h=599&fit=crop&crop=faces%2Cfocalpoint",
+          bullets:[
+            "Known for icy geysers",
+            "Shoots water into space",
+            "Strong evidence for ocean",
+            "Very reflective surface",
+            "Cryovolcanoes",
+            "Thin atmosphere",
+            "Covered in fresh ice",
+            "Small size",
+            "Orbits Saturn in 1.4 days",
+            "Source of material for Saturn’s E-ring"
+          ]
+        },
+        {name:"Mimas",
+          img:"https://assets.science.nasa.gov/dynamicimage/assets/science/psd/solar/2023/07/PIA12739_modest.jpg?w=900&h=900&fit=crop&crop=faces%2Cfocalpoint",
+          bullets:[
+            "Looks like the Death Star",
+            "Large crater called Herschel",
+            "Small icy moon",
+            "Very low density",
+            "Cold surface",
+            "Heavily cratered",
+            "Orbits in 23 hours",
+            "Causes waves in Saturn’s rings",
+            "Reflects lots of light",
+            "Discovered in 1789"
+          ]
+        }
+      ],
+
+      "Uranus":[
+        {name:"Ariel",
+          img:"https://science.nasa.gov/wp-content/uploads/2017/11/ariel-pia01534.jpg?resize=529,600",
+          bullets:[
+            "Bright icy surface",
+            "Canyons and cliffs",
+            "Possible subsurface ocean",
+            "One of Uranus’s largest moons",
+            "Few craters",
+            "Smooth regions indicate past activity",
+            "Reflective surface",
+            "Orbits in 2.5 days",
+            "Cold temperatures",
+            "Discovered in 1851"
+          ]
+        },
+        {name:"Umbriel",
+          img:"https://assets.science.nasa.gov/dynamicimage/assets/science/psd/solar/2023/07/PIA00040_umbriel.jpg?w=400&h=400&fit=crop&crop=faces%2Cfocalpoint",
+          bullets:[
+            "Darkest Uranus moon",
+            "Old, cratered surface",
+            "Cold and inactive",
+            "Low reflectivity",
+            "Possible carbon-rich material",
+            "Orbits in 4 days",
+            "Large impact crater called Wunda",
+            "Discovered in 1851",
+            "Heavily cratered",
+            "Very little geological activity"
+          ]
+        },
+        {name:"Titania",
+          img:"https://assets.science.nasa.gov/dynamicimage/assets/science/psd/solar/2023/07/PIA00036.jpg?w=400&h=400&fit=crop&crop=faces%2Cfocalpoint",
+          bullets:[
+            "Largest Uranus moon",
+            "Huge canyons",
+            "Signs of past tectonic activity",
+            "Icy and rocky surface",
+            "Orbits in 8.7 days",
+            "Possible ocean beneath crust",
+            "Discovered in 1787",
+            "Has scarps and cliffs",
+            "Surface partially young",
+            "Fourth largest moon in solar system"
+          ]
+        },
+        {name:"Oberon",
+          img:"https://assets.science.nasa.gov/dynamicimage/assets/science/psd/solar/2023/07/Oberon_732.jpg?w=400&h=219&fit=crop&crop=faces%2Cfocalpoint",
+          bullets:[
+            "Second largest Uranus moon",
+            "Heavily cratered",
+            "Bright icy peaks",
+            "Rocky inner core",
+            "Orbits in 13.5 days",
+            "Very old surface",
+            "Large dark patches",
+            "Discovered in 1787",
+            "Cold and inactive",
+            "Thin ice covering rocks"
+          ]
+        }
+      ],
+
+      "Neptune":[
+        {name:"Triton",
+          img:"https://assets.science.nasa.gov/dynamicimage/assets/science/psd/solar/2023/07/PIA00317_modest.jpg?w=654&h=509&fit=crop&crop=faces%2Cfocalpoint",
+          bullets:[
+            "Largest Neptune moon",
+            "Retrograde orbit",
+            "Likely captured Kuiper Belt object",
+            "Has nitrogen geysers",
+            "Thin atmosphere",
+            "Icy surface",
+            "Very cold temperatures",
+            "Possible subsurface ocean",
+            "Orbits in 5.8 days",
+            "Smooth plains & ridges"
+          ]
+        },
+        {name:"Nereid",
+          img:"https://assets.science.nasa.gov/dynamicimage/assets/science/psd/solar/2023/07/Nereid-browse-732X520.jpg?w=732&h=520&fit=crop&crop=faces%2Cfocalpoint",
+          bullets:[
+            "Highly elliptical orbit",
+            "One of Neptune’s outer moons",
+            "Very irregular shape",
+            "Discovered in 1949",
+            "Long orbital period",
+            "Likely captured object",
+            "Very dark surface",
+            "Small size",
+            "Cold temperatures",
+            "Orbits far from Neptune"
+          ]
+        },
+        {name:"Larissa",
+          img:"https://assets.science.nasa.gov/dynamicimage/assets/science/psd/solar/2023/07/Larissa_732X520.jpg?w=732&h=520&fit=crop&crop=faces%2Cfocalpoint",
+          bullets:[
+            "Inner Neptune moon",
+            "Irregular shape",
+            "Heavily cratered",
+            "Very dark surface",
+            "Discovered in 1981",
+            "Orbits in 0.5 days",
+            "Likely captured",
+            "Very low gravity",
+            "Cold icy surface",
+            "Non-spherical body"
+          ]
+        }
+      ]
+    };
+
+    /* ------------ REST OF YOUR ORIGINAL JAVASCRIPT (UNCHANGED) ------------ */
+
+    const container = document.getElementById("moonGridContainer");
+    for(const planet in moons){
+      const header = document.createElement("h3");
+      header.className="moon-planet-header";
+      header.innerText = planet + (planet==="Earth"? "'s Moon" : "'s Moons");
+      container.appendChild(header);
+
+      const grid = document.createElement("div");
+      grid.className="planet-grid";
+      moons[planet].forEach(moon=>{
+        const div = document.createElement("div");
+        div.className="planet-box";
+        div.onclick = ()=>showMoonDetails(moon.name);
+        div.innerHTML = `<img src="${moon.img}"/><h4>${moon.name}</h4>`;
+        grid.appendChild(div);
+      });
+      container.appendChild(grid);
+    }
+
+    function showDetails(planet){
+      const planetImg = document.getElementById("planetImg");
+      planetImg.src = data[planet].img;
+      planetImg.classList.add("rotate");
+      document.getElementById("planetTitle").innerText = planet;
+      const list = document.getElementById("planetInfo");
+      list.innerHTML = "";
+      data[planet].bullets.forEach(item=>{
+        const li = document.createElement("li");
+        li.innerText = item;
+        list.appendChild(li);
+      });
+      document.getElementById("planetDetails").style.display="flex";
+    }
+
+    function closeDetails(){
+      document.getElementById("planetDetails").style.display="none";
+      document.getElementById("planetImg").classList.remove("rotate");
+    }
+
+    function showMoonDetails(moonName){
+      let moonData;
+      for(const planet in moons){
+        moonData = moons[planet].find(m=>m.name===moonName);
+        if(moonData) break;
+      }
+      if(!moonData) return;
+      const moonImg = document.getElementById("moonImg");
+      moonImg.src = moonData.img;
+      moonImg.classList.add("rotate");
+      document.getElementById("moonTitle").innerText = moonName;
+      const list = document.getElementById("moonInfo");
+      list.innerHTML="";
+      moonData.bullets.forEach(item=>{
+        const li=document.createElement("li");
+        li.innerText=item;
+        list.appendChild(li);
+      });
+      document.getElementById("moonDetails").style.display="flex";
+    }
+
+    function closeMoonDetails(){
+      document.getElementById("moonDetails").style.display="none";
+      document.getElementById("moonImg").classList.remove("rotate");
+    }
+
+    const navLinks = document.querySelectorAll("nav ul li a");
+    navLinks.forEach(link => {
+      link.addEventListener("click", function(e){
+        e.preventDefault();
+        const target = this.getAttribute("data-target");
+        const sections = ["home","planetSection","moonSection","about","contact"];
+        sections.forEach(id=>{
+          const el = document.getElementById(id);
+          if(el) el.style.display = (id===target?"block":"none");
+        });
+        document.getElementById("planetGridContainer").style.display = (target==="planetSection"?"grid":"none");
+        document.getElementById("moonGridContainer").style.display = (target==="moonSection"?"grid":"none");
+      });
+    });
+
+    document.getElementById("home").style.display="block";
+    document.getElementById("planetSection").style.display="none";
+    document.getElementById("moonSection").style.display="none";
+    document.getElementById("planetGridContainer").style.display="none";
+    document.getElementById("moonGridContainer").style.display="none";
+    document.getElementById("about").style.display="none";
+    document.getElementById("contact").style.display="none";
+
+  </script>
+</body>
+</html>
